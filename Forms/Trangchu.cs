@@ -19,7 +19,7 @@ namespace fightCrypto.Forms
 
         private void btn_thịtruong_Click(object sender, EventArgs e)
         {
-
+          this.Close();
         }
     }
 }
