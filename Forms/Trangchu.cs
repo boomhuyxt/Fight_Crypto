@@ -42,6 +42,8 @@ namespace fightCrypto.Forms
         // --- HÀM MỚI: LẤY DỮ LIỆU KHI FORM ĐƯỢC LOAD ---
         private async void Trangchu_Load(object sender, EventArgs e)
         {
+            this.dgv_Thitruong.AutoGenerateColumns = false;
+
             try
             {
                 // Gọi hàm để lấy dữ liệu thị trường (Spot)
@@ -56,27 +58,38 @@ namespace fightCrypto.Forms
             }
         }
 
+        // --- HÀM TICK (CHẠY LIÊN TỤC MỖI 5 GIÂY) ---
+        private async void timer1_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                // Cập nhật lại dữ liệu
+                await LoadSpotMarketData();
+                // await LoadFutureMarketData();
+            }
+            catch (Exception ex)
+            {
+                
+            }
+        }
+
         private async Task LoadSpotMarketData()
         {
-            // 1. GỌI API
-            // Đây là API lấy thông tin 24h cho TẤT CẢ các cặp Spot
             string apiUrl = "https://api.binance.com/api/v3/ticker/24hr";
             string jsonResponse = await client.GetStringAsync(apiUrl);
 
-            // 2. CHUYỂN ĐỔI JSON
-            // Chuyển đổi chuỗi JSON thành một danh sách các đối tượng
             List<BinanceTicker> tickers = JsonConvert.DeserializeObject<List<BinanceTicker>>(jsonResponse);
 
-            // 3. HIỂN THỊ LÊN DATAGRIDVIEW
-            // (Giả sử bạn đã kéo dgv_Thitruong vào panel_Thitruong)
+            // --- LỌC DỮ LIỆU ĐỂ GIỐNG BINANCE HƠN ---
+            // Chỉ lấy các cặp giao dịch với USDT và BUSD (giống trang chủ Binance)
+            var filteredTickers = tickers
+                .Where(t => t.Symbol.EndsWith("USDT") || t.Symbol.EndsWith("BUSD"))
+                .Take(100) // Lấy 100 cặp đầu
+                .ToList();
 
-            // Chỉ lấy 100 cặp đầu tiên cho nhẹ
-            this.dgv_Thitruong.DataSource = tickers.Take(100).ToList();
+            // Gán dữ liệu
+            this.dgv_Thitruong.DataSource = filteredTickers;
         }
-
-        // === XÓA CÁC HÀM PAINT VÌ CHÚNG KHÔNG CẦN THIẾT ===
-        // private void panel_future_Paint(object sender, PaintEventArgs e) { }
-        // private void panel_Thitruong_Paint(object sender, PaintEventArgs e) { }
 
 
         // ... code các nút bấm của bạn ...
@@ -100,29 +113,27 @@ namespace fightCrypto.Forms
 
         private void dgv_Thitruong_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (this.dgv_Thitruong.Columns[e.ColumnIndex].Name == "PriceChangePercent")
+            this.dgv_Thitruong.Cursor = Cursors.Default;
+            // KIỂM TRA LẠI TÊN CỘT CỦA BẠN (colPriceChangePercent)
+            if (this.dgv_Thitruong.Columns[e.ColumnIndex].Name == "colPriceChangePercent")
             {
                 if (e.Value != null)
                 {
-                    // 1. Lấy giá trị (là string)
                     string stringValue = e.Value.ToString();
-
-                    // 2. Chuyển nó thành số
                     double numericValue;
                     if (double.TryParse(stringValue, out numericValue))
                     {
-                        // 3. Đổi màu dựa trên giá trị
                         if (numericValue > 0)
                         {
-                            e.CellStyle.ForeColor = Color.LimeGreen; // Màu xanh
+                            e.CellStyle.ForeColor = Color.LimeGreen;
                         }
                         else if (numericValue < 0)
                         {
-                            e.CellStyle.ForeColor = Color.FromArgb(255, 100, 100); // Màu đỏ
+                            e.CellStyle.ForeColor = Color.FromArgb(255, 100, 100);
                         }
                         else
                         {
-                            e.CellStyle.ForeColor = Color.White; // Màu trắng
+                            e.CellStyle.ForeColor = Color.White;
                         }
                     }
                 }
@@ -154,5 +165,8 @@ namespace fightCrypto.Forms
 
         [JsonProperty("volume")]
         public string Volume { get; set; }
+
+        [JsonProperty("quoteVolume")]
+        public string QuoteVolume { get; set; }
     }
 }
