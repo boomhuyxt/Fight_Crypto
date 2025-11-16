@@ -52,6 +52,7 @@
             this.panel_future = new System.Windows.Forms.Panel();
             this.dgv_Thitruong = new System.Windows.Forms.DataGridView();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.colIcon = new System.Windows.Forms.DataGridViewImageColumn();
             this.colSymbol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colLastPrice = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colPriceChangePercent = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -81,7 +82,7 @@
             this.btn_future.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btn_future.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_future.ForeColor = System.Drawing.Color.White;
-            this.btn_future.Location = new System.Drawing.Point(228, 9);
+            this.btn_future.Location = new System.Drawing.Point(228, 11);
             this.btn_future.Name = "btn_future";
             this.btn_future.Size = new System.Drawing.Size(75, 23);
             this.btn_future.TabIndex = 9;
@@ -191,16 +192,18 @@
             this.dgv_Thitruong.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgv_Thitruong.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
             this.dgv_Thitruong.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.dgv_Thitruong.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
             dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dgv_Thitruong.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgv_Thitruong.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgv_Thitruong.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colIcon,
             this.colSymbol,
             this.colLastPrice,
             this.colPriceChangePercent,
@@ -216,7 +219,7 @@
             this.dgv_Thitruong.DefaultCellStyle = dataGridViewCellStyle7;
             this.dgv_Thitruong.EnableHeadersVisualStyles = false;
             this.dgv_Thitruong.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
-            this.dgv_Thitruong.Location = new System.Drawing.Point(0, 3);
+            this.dgv_Thitruong.Location = new System.Drawing.Point(20, 3);
             this.dgv_Thitruong.Margin = new System.Windows.Forms.Padding(20);
             this.dgv_Thitruong.Name = "dgv_Thitruong";
             this.dgv_Thitruong.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
@@ -234,7 +237,7 @@
             dataGridViewCellStyle9.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
             this.dgv_Thitruong.RowsDefaultCellStyle = dataGridViewCellStyle9;
             this.dgv_Thitruong.ScrollBars = System.Windows.Forms.ScrollBars.None;
-            this.dgv_Thitruong.Size = new System.Drawing.Size(798, 373);
+            this.dgv_Thitruong.Size = new System.Drawing.Size(765, 373);
             this.dgv_Thitruong.TabIndex = 0;
             this.dgv_Thitruong.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgv_Thitruong_CellFormatting);
             // 
@@ -244,8 +247,18 @@
             this.timer1.Interval = 500;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // colIcon
+            // 
+            this.colIcon.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.colIcon.HeaderText = "";
+            this.colIcon.ImageLayout = System.Windows.Forms.DataGridViewImageCellLayout.Zoom;
+            this.colIcon.MinimumWidth = 10;
+            this.colIcon.Name = "colIcon";
+            this.colIcon.Width = 60;
+            // 
             // colSymbol
             // 
+            this.colSymbol.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
             this.colSymbol.DataPropertyName = "Symbol";
             dataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
             dataGridViewCellStyle3.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -254,6 +267,7 @@
             dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
             dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.White;
             this.colSymbol.DefaultCellStyle = dataGridViewCellStyle3;
+            this.colSymbol.FillWeight = 93.2741F;
             this.colSymbol.HeaderText = "Tên";
             this.colSymbol.Name = "colSymbol";
             // 
@@ -266,8 +280,9 @@
             dataGridViewCellStyle4.Format = "C1";
             dataGridViewCellStyle4.NullValue = null;
             dataGridViewCellStyle4.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.Color.White;
             this.colLastPrice.DefaultCellStyle = dataGridViewCellStyle4;
+            this.colLastPrice.FillWeight = 93.2741F;
             this.colLastPrice.HeaderText = "Giá";
             this.colLastPrice.Name = "colLastPrice";
             // 
@@ -279,6 +294,7 @@
             dataGridViewCellStyle5.NullValue = null;
             dataGridViewCellStyle5.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
             this.colPriceChangePercent.DefaultCellStyle = dataGridViewCellStyle5;
+            this.colPriceChangePercent.FillWeight = 93.2741F;
             this.colPriceChangePercent.HeaderText = "Thay đổi (24h)";
             this.colPriceChangePercent.Name = "colPriceChangePercent";
             // 
@@ -290,6 +306,7 @@
             dataGridViewCellStyle6.ForeColor = System.Drawing.Color.White;
             dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(22)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
             this.colQuoteVolume.DefaultCellStyle = dataGridViewCellStyle6;
+            this.colQuoteVolume.FillWeight = 93.2741F;
             this.colQuoteVolume.HeaderText = "KL 24h ($)";
             this.colQuoteVolume.Name = "colQuoteVolume";
             // 
@@ -329,6 +346,7 @@
         private System.Windows.Forms.Panel panel_future;
         private System.Windows.Forms.DataGridView dgv_Thitruong;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.DataGridViewImageColumn colIcon;
         private System.Windows.Forms.DataGridViewTextBoxColumn colSymbol;
         private System.Windows.Forms.DataGridViewTextBoxColumn colLastPrice;
         private System.Windows.Forms.DataGridViewTextBoxColumn colPriceChangePercent;

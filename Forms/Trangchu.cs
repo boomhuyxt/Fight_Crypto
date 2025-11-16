@@ -11,6 +11,7 @@ using System.Windows.Forms;
 // Thêm các thư viện này
 using System.Net.Http;
 using Newtonsoft.Json;
+using System.Globalization;
 
 namespace fightCrypto.Forms
 {
@@ -23,34 +24,33 @@ namespace fightCrypto.Forms
         {
             InitializeComponent();
 
+            // Sửa lỗi 418 (I'm a teapot)
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36");
+
             // Hiện panel thị trường
             this.panel_Thitruong.Visible = true;
 
             // Gán sự kiện Load cho Form
             this.Load += Trangchu_Load;
 
-            // --- THÊM DÒNG NÀY ĐỂ KHỬ FLICKER ---
+            // Khử flicker
             typeof(DataGridView).InvokeMember(
                "DoubleBuffered",
                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.SetProperty,
                null,
-               this.dgv_Thitruong, // Tên DataGridView của bạn
+               this.dgv_Thitruong,
                new object[] { true });
-            // --- HẾT PHẦN THÊM ---
         }
 
-        // --- HÀM MỚI: LẤY DỮ LIỆU KHI FORM ĐƯỢC LOAD ---
+        // --- HÀM LOAD (CHẠY 1 LẦN) ---
         private async void Trangchu_Load(object sender, EventArgs e)
         {
+            // BẮT BUỘC: Đặt cái này bằng code (vì Designer của bạn bị lỗi)
             this.dgv_Thitruong.AutoGenerateColumns = false;
 
             try
             {
-                // Gọi hàm để lấy dữ liệu thị trường (Spot)
                 await LoadSpotMarketData();
-
-                // (Bạn sẽ tạo một hàm tương tự cho Future)
-                // await LoadFutureMarketData();
             }
             catch (Exception ex)
             {
@@ -58,18 +58,16 @@ namespace fightCrypto.Forms
             }
         }
 
-        // --- HÀM TICK (CHẠY LIÊN TỤC MỖI 5 GIÂY) ---
+        // --- HÀM TICK (CHẠY LIÊN TỤC) ---
         private async void timer1_Tick(object sender, EventArgs e)
         {
             try
             {
-                // Cập nhật lại dữ liệu
                 await LoadSpotMarketData();
-                // await LoadFutureMarketData();
             }
             catch (Exception ex)
             {
-                
+                // Bỏ qua lỗi timer
             }
         }
 
@@ -80,11 +78,9 @@ namespace fightCrypto.Forms
 
             List<BinanceTicker> tickers = JsonConvert.DeserializeObject<List<BinanceTicker>>(jsonResponse);
 
-            // --- LỌC DỮ LIỆU ĐỂ GIỐNG BINANCE HƠN ---
-            // Chỉ lấy các cặp giao dịch với USDT và BUSD (giống trang chủ Binance)
             var filteredTickers = tickers
                 .Where(t => t.Symbol.EndsWith("USDT") || t.Symbol.EndsWith("BUSD"))
-                .Take(100) // Lấy 100 cặp đầu
+                .Take(100)
                 .ToList();
 
             // Gán dữ liệu
@@ -96,13 +92,13 @@ namespace fightCrypto.Forms
         private void btn_thịtruong_Click(object sender, EventArgs e)
         {
             this.panel_Thitruong.Visible = true;
+            this.panel_future.Visible = false;
         }
 
-        // (Bạn cần thêm 1 nút cho Future)
         private void btn_future_Click(object sender, EventArgs e)
         {
             this.panel_Thitruong.Visible = false;
-            this.panel_future.Visible = true; // Hiện panel future
+            this.panel_future.Visible = true;
         }
 
         private void btnGiaoDich_Click(object sender, EventArgs e)
@@ -110,39 +106,100 @@ namespace fightCrypto.Forms
             menuGiaoDich.Show(btnGiaoDich, 0, btnGiaoDich.Height);
         }
 
+        // --- HÀM HỖ TRỢ ĐỊNH DẠNG SỐ ---
+        private string FormatLargeNumber(double number)
+        {
+            if (number >= 1_000_000_000_000) return $"${(number / 1_000_000_000_000):F2}T";
+            if (number >= 1_000_000_000) return $"${(number / 1_000_000_000):F2}B";
+            if (number >= 1_000_000) return $"${(number / 1_000_000):F2}M";
+            if (number >= 1_000) return $"${(number / 1_000):F2}K";
+            return $"${number:N2}";
+        }
 
+
+        // --- HÀM ĐỊNH DẠNG Ô (ĐÃ NÂNG CẤP TỐI ĐA) ---
         private void dgv_Thitruong_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            this.dgv_Thitruong.Cursor = Cursors.Default;
-            // KIỂM TRA LẠI TÊN CỘT CỦA BẠN (colPriceChangePercent)
-            if (this.dgv_Thitruong.Columns[e.ColumnIndex].Name == "colPriceChangePercent")
+            // Lấy tên cột hiện tại
+            string colName = this.dgv_Thitruong.Columns[e.ColumnIndex].Name;
+
+            // --- 1. XỬ LÝ CỘT ICON (colIcon) ---
+            if (colName == "colIcon")
             {
-                if (e.Value != null)
+                if (e.RowIndex >= 0)
                 {
-                    string stringValue = e.Value.ToString();
-                    double numericValue;
-                    if (double.TryParse(stringValue, out numericValue))
+                    // Lấy đối tượng dữ liệu của hàng này
+                    var row = this.dgv_Thitruong.Rows[e.RowIndex];
+                    if (row.DataBoundItem is BinanceTicker ticker)
                     {
-                        if (numericValue > 0)
+                        // Dọn dẹp tên symbol (ví dụ: "BTCUSDT" -> "btc")
+                        string cleanSymbol = ticker.Symbol
+                            .Replace("USDT", "")
+                            .Replace("BUSD", "");
+                           
+
+                        // Thử lấy ảnh từ Resources (bạn phải tự thêm ảnh vào)
+                        try
                         {
-                            e.CellStyle.ForeColor = Color.LimeGreen;
+                            e.Value = (Image)Properties.Resources.ResourceManager.GetObject(cleanSymbol);
                         }
-                        else if (numericValue < 0)
+                        catch
                         {
-                            e.CellStyle.ForeColor = Color.FromArgb(255, 100, 100);
-                        }
-                        else
-                        {
-                            e.CellStyle.ForeColor = Color.White;
+                            e.Value = null; // Không tìm thấy ảnh
                         }
                     }
                 }
+                return; // Xong việc với ô này
+            }
+
+            // --- 2. XỬ LÝ CÁC Ô CÓ DỮ LIỆU (VALUE) ---
+            if (e.Value == null) return;
+            string stringValue = e.Value.ToString();
+
+            // --- 2a. SỬA TÊN (colSymbol) ---
+            if (colName == "colSymbol")
+            {
+                // Sửa "BTCUSDT" thành "BTC"
+                e.Value = stringValue.Replace("USDT", "").Replace("BUSD", "");
+            }
+
+            // --- 2b. ĐỊNH DẠNG SỐ (Giá, %, Khối lượng) ---
+            double numericValue;
+            bool isNumber = double.TryParse(stringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out numericValue);
+            if (!isNumber) return; // Bỏ qua nếu không phải là số
+
+            if (colName == "colLastPrice")
+            {
+                e.Value = $"{numericValue.ToString("N2")} $";
+            }
+            else if (colName == "colPriceChangePercent")
+            {
+                string formattedPercent = $"{numericValue:F2}%";
+                if (numericValue > 0)
+                {
+                    e.CellStyle.ForeColor = Color.LimeGreen;
+                    e.Value = $"+{formattedPercent}";
+                }
+                else if (numericValue < 0)
+                {
+                    e.CellStyle.ForeColor = Color.FromArgb(255, 100, 100);
+                    e.Value = formattedPercent;
+                }
+                else
+                {
+                    e.CellStyle.ForeColor = Color.White;
+                    e.Value = formattedPercent;
+                }
+            }
+            else if (colName == "colQuoteVolume")
+            {
+                e.Value = FormatLargeNumber(numericValue);
             }
         }
     }
 
+
     // --- LỚP HỖ TRỢ ĐỂ ĐỰNG DỮ LIỆU TỪ BINANCE ---
-    // (Bạn phải định nghĩa lớp này để Json hoạt động)
     public class BinanceTicker
     {
         [JsonProperty("symbol")]
