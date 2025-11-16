@@ -8,26 +8,24 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-// Thêm các thư viện này
-using System.Net.Http;
+
 using Newtonsoft.Json;
 using System.Globalization;
+
+// --- THÊM CÁC DỊCH VỤ VÀ MÔ HÌNH MỚI ---
+using fightCrypto.Models;
+using fightCrypto.Services;
 
 namespace fightCrypto.Forms
 {
     public partial class Trangchu : Form
     {
-        // Tạo một HttpClient để tái sử dụng
-        private static readonly HttpClient client = new HttpClient();
-
+        
         public Trangchu()
         {
             InitializeComponent();
 
-            // Sửa lỗi 418 (I'm a teapot)
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36");
-
-            // Hiện panel thị trường
+         
             this.panel_Thitruong.Visible = true;
 
             // Gán sự kiện Load cho Form
@@ -45,12 +43,15 @@ namespace fightCrypto.Forms
         // --- HÀM LOAD (CHẠY 1 LẦN) ---
         private async void Trangchu_Load(object sender, EventArgs e)
         {
-            // BẮT BUỘC: Đặt cái này bằng code (vì Designer của bạn bị lỗi)
             this.dgv_Thitruong.AutoGenerateColumns = false;
 
             try
             {
-                await LoadSpotMarketData();
+                // --- THAY ĐỔI CÁCH GỌI ---
+                // 1. Gọi Service để lấy dữ liệu
+                var data = await BinanceService.LoadSpotMarketData();
+                // 2. Gán dữ liệu cho DataGridView
+                this.dgv_Thitruong.DataSource = data;
             }
             catch (Exception ex)
             {
@@ -63,7 +64,11 @@ namespace fightCrypto.Forms
         {
             try
             {
-                await LoadSpotMarketData();
+             
+                // 1. Gọi Service để lấy dữ liệu
+                var data = await BinanceService.LoadSpotMarketData();
+                // 2. Gán dữ liệu cho DataGridView
+                this.dgv_Thitruong.DataSource = data;
             }
             catch (Exception ex)
             {
@@ -71,24 +76,7 @@ namespace fightCrypto.Forms
             }
         }
 
-        private async Task LoadSpotMarketData()
-        {
-            string apiUrl = "https://api.binance.com/api/v3/ticker/24hr";
-            string jsonResponse = await client.GetStringAsync(apiUrl);
-
-            List<BinanceTicker> tickers = JsonConvert.DeserializeObject<List<BinanceTicker>>(jsonResponse);
-
-            var filteredTickers = tickers
-                .Where(t => t.Symbol.EndsWith("USDT") || t.Symbol.EndsWith("BUSD"))
-                .Take(100)
-                .ToList();
-
-            // Gán dữ liệu
-            this.dgv_Thitruong.DataSource = filteredTickers;
-        }
-
-
-        // ... code các nút bấm của bạn ...
+        // ... code các nút bấm của bạn (Giữ nguyên) ...
         private void btn_thịtruong_Click(object sender, EventArgs e)
         {
             this.panel_Thitruong.Visible = true;
@@ -117,7 +105,7 @@ namespace fightCrypto.Forms
         }
 
 
-        // --- HÀM ĐỊNH DẠNG Ô (ĐÃ NÂNG CẤP TỐI ĐA) ---
+        // --- HÀM ĐỊNH DẠNG Ô ---
         private void dgv_Thitruong_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             // Lấy tên cột hiện tại
@@ -128,17 +116,12 @@ namespace fightCrypto.Forms
             {
                 if (e.RowIndex >= 0)
                 {
-                    // Lấy đối tượng dữ liệu của hàng này
                     var row = this.dgv_Thitruong.Rows[e.RowIndex];
                     if (row.DataBoundItem is BinanceTicker ticker)
                     {
-                        // Dọn dẹp tên symbol (ví dụ: "BTCUSDT" -> "btc")
                         string cleanSymbol = ticker.Symbol
                             .Replace("USDT", "")
                             .Replace("BUSD", "");
-                           
-
-                        // Thử lấy ảnh từ Resources (bạn phải tự thêm ảnh vào)
                         try
                         {
                             e.Value = (Image)Properties.Resources.ResourceManager.GetObject(cleanSymbol);
@@ -149,7 +132,7 @@ namespace fightCrypto.Forms
                         }
                     }
                 }
-                return; // Xong việc với ô này
+                return;
             }
 
             // --- 2. XỬ LÝ CÁC Ô CÓ DỮ LIỆU (VALUE) ---
@@ -159,14 +142,13 @@ namespace fightCrypto.Forms
             // --- 2a. SỬA TÊN (colSymbol) ---
             if (colName == "colSymbol")
             {
-                // Sửa "BTCUSDT" thành "BTC"
                 e.Value = stringValue.Replace("USDT", "").Replace("BUSD", "");
             }
 
             // --- 2b. ĐỊNH DẠNG SỐ (Giá, %, Khối lượng) ---
             double numericValue;
             bool isNumber = double.TryParse(stringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out numericValue);
-            if (!isNumber) return; // Bỏ qua nếu không phải là số
+            if (!isNumber) return;
 
             if (colName == "colLastPrice")
             {
@@ -196,34 +178,5 @@ namespace fightCrypto.Forms
                 e.Value = FormatLargeNumber(numericValue);
             }
         }
-    }
-
-
-    // --- LỚP HỖ TRỢ ĐỂ ĐỰNG DỮ LIỆU TỪ BINANCE ---
-    public class BinanceTicker
-    {
-        [JsonProperty("symbol")]
-        public string Symbol { get; set; }
-
-        [JsonProperty("priceChange")]
-        public string PriceChange { get; set; }
-
-        [JsonProperty("priceChangePercent")]
-        public string PriceChangePercent { get; set; }
-
-        [JsonProperty("lastPrice")]
-        public string LastPrice { get; set; }
-
-        [JsonProperty("highPrice")]
-        public string HighPrice { get; set; }
-
-        [JsonProperty("lowPrice")]
-        public string LowPrice { get; set; }
-
-        [JsonProperty("volume")]
-        public string Volume { get; set; }
-
-        [JsonProperty("quoteVolume")]
-        public string QuoteVolume { get; set; }
     }
 }
