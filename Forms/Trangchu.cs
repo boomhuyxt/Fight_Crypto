@@ -20,7 +20,7 @@ namespace fightCrypto.Forms
 {
     public partial class Trangchu : Form
     {
-        
+
         public Trangchu()
         {
             InitializeComponent();
@@ -57,6 +57,8 @@ namespace fightCrypto.Forms
             {
                 MessageBox.Show("Lỗi khi tải dữ liệu từ Binance: " + ex.Message);
             }
+
+           
         }
 
         // --- HÀM TICK (CHẠY LIÊN TỤC) ---
@@ -178,5 +180,6 @@ namespace fightCrypto.Forms
                 e.Value = FormatLargeNumber(numericValue);
             }
         }
+        
     }
 }

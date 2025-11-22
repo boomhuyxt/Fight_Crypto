@@ -1,4 +1,5 @@
 ﻿using fightCrypto.Forms;
+using fightCrypto.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,6 +15,7 @@ namespace WinFormsAppLogin
 {
     public partial class Modau : Form
     {
+        private AutoResizer _resizer;
         public Modau()
         {
             InitializeComponent();

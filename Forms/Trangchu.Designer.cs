@@ -51,12 +51,12 @@
             this.panel_Thitruong = new System.Windows.Forms.Panel();
             this.panel_future = new System.Windows.Forms.Panel();
             this.dgv_Thitruong = new System.Windows.Forms.DataGridView();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.colIcon = new System.Windows.Forms.DataGridViewImageColumn();
             this.colSymbol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colLastPrice = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colPriceChangePercent = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colQuoteVolume = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.Taskbar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuGiaoDich.SuspendLayout();
@@ -241,12 +241,6 @@
             this.dgv_Thitruong.TabIndex = 0;
             this.dgv_Thitruong.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgv_Thitruong_CellFormatting);
             // 
-            // timer1
-            // 
-            this.timer1.Enabled = true;
-            this.timer1.Interval = 500;
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
             // colIcon
             // 
             this.colIcon.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
@@ -309,6 +303,12 @@
             this.colQuoteVolume.FillWeight = 93.2741F;
             this.colQuoteVolume.HeaderText = "KL 24h ($)";
             this.colQuoteVolume.Name = "colQuoteVolume";
+            // 
+            // timer1
+            // 
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 500;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // Trangchu
             // 
